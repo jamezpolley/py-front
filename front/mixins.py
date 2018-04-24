@@ -40,3 +40,10 @@ class Updateable(object):
         if update_data:
             client.patch(path, json=update_data)
             self._orig_data.update(update_data)
+
+
+class Deleteable(object):
+    def delete(self):
+        if getattr(self, 'id', None) is None:
+            raise ValueError('%s must be saved before it is deleted' % self)
+        client.delete(self.Meta.delete_path.format(id=self.id))

@@ -177,12 +177,13 @@ class Handle(Schema):
     source = fields.Str()
 
 
-class Contact(Resource, mixins.Readable, mixins.Creatable, mixins.Updateable):
+class Contact(Resource, mixins.Readable, mixins.Creatable, mixins.Updateable, mixins.Deleteable):
     class Meta:
         list_path = 'contacts/'
         detail_path = 'contacts/{id}/'
         create_path = 'contacts/'
         update_path = 'contacts/{id}/'
+        delete_path = 'contacts/{id}/'
 
     objects = Manager()
 
