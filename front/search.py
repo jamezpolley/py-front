@@ -35,19 +35,17 @@ class ListSet(object):
 
     def _paginate(self):
         next_page = self._response[self._pagination_key].get(self._next_key)
-        if next_page is None:
-            for value in self._build_resources(self._response[self._results_key]):  # noqa: E501
-                yield value
-        else:
-            while next_page is not None:
-                for value in self._build_resources(
-                    rows=self._response[self._results_key]
-                ):
-                    yield value
 
-                self._response = client.get(next_page, raw_url=True)
-                pagination_data = self._response[self._pagination_key]
-                next_page = pagination_data.get(self._next_key)
+        while next_page is not None:
+            for value in self._build_resources(rows=self._response[self._results_key]):  # noqa: E501
+                yield value
+
+            self._response = client.get(next_page, raw_url=True)
+            pagination_data = self._response[self._pagination_key]
+            next_page = pagination_data.get(self._next_key)
+
+        for value in self._build_resources(self._response[self._results_key]):  # noqa: E501
+            yield value
 
     def _build_resources(self, rows):
         for row in rows:
