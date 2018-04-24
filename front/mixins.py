@@ -22,3 +22,21 @@ class Creatable(object):
             )
         data = client.post(self.Meta.create_path, json=self._raw_data)
         self._set_fields(self._load_raw(data))
+        self._orig_data = self._load_raw(data)
+
+
+class Updateable(object):
+    def update(self):
+        if getattr(self, 'id', None) is None:
+            raise ValueError('%s must be saved before it is updated' % self)
+
+        path = self.Meta.update_path.format(id=self.id)
+
+        update_data = {}
+        for k, v in self._raw_data.items():
+            if self._orig_data.get(k) != v:
+                update_data[k] = v
+
+        if update_data:
+            client.patch(path, json=update_data)
+            self._orig_data.update(update_data)

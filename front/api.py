@@ -22,8 +22,14 @@ class API(object):
     def get(self, endpoint, params=None, **kwargs):
         return self._request('get', endpoint, params=params, **kwargs)
 
-    def put(self, endpoint, data=None, json=None, **kwargs):
-        return self._request('endpoint', data=data, json=json, **kwargs)
+    def post(self, endpoint, data=None, json=None, **kwargs):
+        return self._request('post', endpoint, data=data, json=json, **kwargs)
+
+    def patch(self, endpoint, data=None, json=None, **kwargs):
+        return self._request('patch', endpoint, data=data, json=json, **kwargs)
+
+    def delete(self, endpoint, data=None, json=None, **kwargs):
+        return self._request('delete', endpoint, data=data, json=json, **kwargs)
 
     def _request(self, method, endpoint, **kwargs):
         if self.jwt_key is None:
@@ -45,7 +51,10 @@ class API(object):
             **kwargs
         )
         response.raise_for_status()
-        return response.json()
+        if response.content:
+            return response.json()
+        else:
+            return None
 
 
 client = API()

@@ -177,10 +177,12 @@ class Handle(Schema):
     source = fields.Str()
 
 
-class Contact(Resource, mixins.Readable):
+class Contact(Resource, mixins.Readable, mixins.Creatable, mixins.Updateable):
     class Meta:
         list_path = 'contacts/'
         detail_path = 'contacts/{id}/'
+        create_path = 'contacts/'
+        update_path = 'contacts/{id}/'
 
     objects = Manager()
 
@@ -191,6 +193,18 @@ class Contact(Resource, mixins.Readable):
     is_spammer = fields.Bool(missing=None)
     links = fields.List(fields.Url, many=True)
     handles = fields.Nested(Handle, many=True)
+
+    def update(self):
+        handle_path = 'contacts/{id}/handles'.format(id=self.id)
+        old_handles = set((h['source'], h['handle']) for h in self._orig_data['handles'])
+        updated_handles = set((h['source'], h['handle']) for h in self.handles)
+        for s, h in updated_handles - old_handles:
+            client.post(handle_path, json={'source': s, 'handle': h})
+        for s, h in old_handles - updated_handles:
+            client.delete(handle_path, json={'source': s, 'handle': h})
+        self._orig_data['handles'] = self.handles
+
+        super(Contact, self).update()
 
 
 class Tag(Resource, mixins.Readable):
