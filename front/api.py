@@ -1,4 +1,5 @@
 import requests
+import time
 
 from front import exceptions
 
@@ -45,11 +46,17 @@ class API(object):
         if kwargs.pop('raw_url', False):
             url = endpoint
 
-        response = requests.request(
-            method=method,
-            url=url,
-            **kwargs
-        )
+        for i in range(3):  # retry up to 3 times
+            response = requests.request(
+                method=method,
+                url=url,
+                **kwargs
+            )
+
+            if response.status_code == 429:
+                time.sleep(min(int(response.headers.get('Retry-After'), 60), 120))
+            else:
+                break
         response.raise_for_status()
         if response.content:
             return response.json()
